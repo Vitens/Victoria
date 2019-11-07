@@ -2,10 +2,12 @@ import numpy as np
 import pandas as pd
 
 class FIFO(object):
+    # Class for pipes, which contain segregated parcels. 
     
-    def __init__(self, volume):
+    def __init__(self,volume, sol_list):
         self.volume = volume
-        self.state =  [{'x0':0, 'x1':1, 'q': pd.Series(np.zeros(6))}] 
+        comp = len(sol_list)
+        self.state =  [{'x0':0, 'x1':1, 'q': pd.Series(np.zeros(comp))}] 
         # Need to write a function to auto update the size of the PHREEQC solution matrix
         self.output = []
         self.ready = False 
@@ -93,5 +95,3 @@ class FIFO(object):
                     self.state.remove(parcel2)
                     self.state = new_state + self.state
                     self.merge_parcels()
-
-        

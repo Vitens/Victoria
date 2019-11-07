@@ -2,12 +2,13 @@ import numpy as np
 import pandas as pd
 
 class MIX(object):
+    # Class for mixing pipes at nodes, -> mixing parcels at nodes. 
     
-    def __init__(self):
+    def __init__(self, sol_list):
         self.sorted_parcels = []
         self.outflow = []
-        
-        
+        self.sol_list = sol_list
+        self.mixed_parcels = []
         
     def reset_outflow(self):
         self.outflow = []
@@ -52,7 +53,8 @@ class MIX(object):
             self.mixed_parcels[count]['q'] = self.mixed_parcels[count]['q'].round(10)
             xcure = parcel1['x1']
             count += 1
-        
+    
+    
     def parcels_out(self, flows_out):
         self.outflow = []
         output = []
@@ -69,10 +71,22 @@ class MIX(object):
                     temp.append([parcel_volume,parcel['q']])      
             output.append(temp)
         self.outflow = output
-        
-    def emitter(self, shift_volume):
-        q= pd.DataFrame(np.zeros((6,6)))
-        for i in range(6):
+       
+    
+    def emitter(self, node, shift_volume):
+        self.mixed_parcels = []
+        comp = len(self.sol_list)
+        q= pd.DataFrame(np.zeros((comp,comp)))
+        for i in range(comp):
             q[i][i] = 1
-        
+            
+        # Required for the model
         self.outflow = [[[shift_volume,q[1]]]]
+        
+        # For easier access later, assume that the phreeqc solution is constant. 
+        self.mixed_parcels.append({
+                'x0': 0,
+                'x1': 1,
+                'q': self.outflow[0][0][1],
+                'volume': shift_volume
+            })
