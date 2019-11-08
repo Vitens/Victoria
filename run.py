@@ -1,8 +1,9 @@
 from epyphreeqc import EpyPhreeqc
 from phreeqpython import PhreeqPython
+from epynet import Network
 
 pp = PhreeqPython()
-##### PHREEQC SOLUTION INPUT #####
+# PHREEQC SOLUTION INPUT #####
 
 sol_list = {}
 
@@ -41,7 +42,9 @@ sol2 = pp.add_solution({
 })
 sol_list[2] = sol2
 
-run = EpyPhreeqc('demo2.inp',sol_list, pp)
-run.steady_state(sol_list)
+network = Network('demo2.inp')
+network.solve()
+timestep = 1
 
-
+run = EpyPhreeqc(network, sol_list, pp)
+run.run(network, sol_list, timestep)
