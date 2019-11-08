@@ -7,7 +7,7 @@ class Water_quality(object):
         self.mixture = []
         self.pp = pp
     
-    def quality_nodes(self, network, sol_list, models):
+    def quality_nodes(self, network, models):
         # Calculates the quality of the water in each node in the network, excluding the reservoirs (boundary values anyway)
         self.q_nodes = {}
        
@@ -17,10 +17,12 @@ class Water_quality(object):
             for parcel in models.nodes[node.uid].mixed_parcels:
                 mix_temp = {}
                 
-                
                  # Make dict entry for phreeqc solutions with its respective volume fraction
-                for i in sol_list:
-                    mix_temp[sol_list[i]] = parcel['q'][i]    
+                for sol in parcel['q']:
+                    mix_temp[sol] = parcel['q'][sol]
+                
+                #for i in sol_list:
+                #    mix_temp[sol_list[i]] = parcel['q'][i]    
                   
                 #output_temp.append(pp.mix_solutions(mix_temp)) # Calculate the phreeqc solution mixture and store it 
                 output_temp.append({
@@ -33,7 +35,7 @@ class Water_quality(object):
                 
         
     
-    def quality_pipes(self, network, sol_list, models):
+    def quality_pipes(self, network, models):
         # Calculates the quality of the water of each parcel in the network.
         self.q_pipes = {}
         
@@ -43,8 +45,8 @@ class Water_quality(object):
             for parcel in models.pipes[link.uid].state:
                 mix_temp = {}
                 
-                for i in sol_list:
-                    mix_temp[sol_list[i]] = parcel['q'][i]
+                for sol in parcel['q']:
+                    mix_temp[sol] = parcel['q'][sol]
                     
                 output_temp.append({
                 'x0': parcel['x0'],

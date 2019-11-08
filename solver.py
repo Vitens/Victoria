@@ -15,38 +15,38 @@ class Solver(object):
         self.models = Models(self.net, self.sol_list)
         self.qw = Water_quality(pp)
         
-    def step(self, timestep):
+    def step(self, timestep, sol_list):
         # Solve the volume fractions for the whole network for one timestep 
         # Loop over all nodes reservoir nodes
         for emitter in self.net.nodes[self.net.nodes.inflow==0]:
             nodetype = 'emitter'
-            self.run_trace(emitter, nodetype, timestep)
+            self.run_trace(emitter, nodetype, timestep, sol_list)
         
         for link in self.net.links:
             self.models.pipes[link.uid[0]].ready = False
             
             
-    def minor(self):
+    def minor(self, sol_list):
         # Solve the volume fractions for the whole network over multiple timesteps, hydraulic equations are only solved once
         self.net.solve()
         timestep = 1
         
-        for t in range(0,10,1):
+        for t in range(0,1,1):
             print('COUNTER',t)
-            self.step(timestep)
+            self.step(timestep, sol_list)
         
         for link in self.net.links:
             print('pipe', link.uid, self.models.pipes[link.uid].state)
                 
-        self.qw.quality_nodes(self.net, self.sol_list, self.models)
-        self.qw.quality_pipes(self.net, self.sol_list, self.models)
-        
+        self.qw.quality_nodes(self.net, self.models)
+        self.qw.quality_pipes(self.net, self.models)
+
     def major(self):
         # Solve the hydraulic equations and volume fractions for the whole network over multiple timesteps
         return
     
     
-    def run_trace(self, startnode, node_type, timestep):
+    def run_trace(self, startnode, node_type, timestep, sol_list):
         #print(startnode)
         # Check whether all upstream pipes are ready
         ready = all(list(self.models.pipes[link.uid[0]].ready for link in startnode.upstream_links))
@@ -56,7 +56,7 @@ class Solver(object):
         # Check type of node 
         if node_type == 'emitter': 
             shift_volume = timestep * startnode.outflow
-            self.models.nodes[startnode.uid].emitter(startnode, shift_volume)
+            self.models.nodes[startnode.uid].emitter(startnode, shift_volume, sol_list)
             
         if node_type ==  'junction':
             # Collect all parcels flowing into the node
@@ -88,5 +88,5 @@ class Solver(object):
             self.models.pipes[link.uid[0]].ready = True
             # Run trace from downstream node
             flowcount += 1
-            self.run_trace(link.downstream_node,'junction', timestep)
+            self.run_trace(link.downstream_node,'junction', timestep, sol_list)
             

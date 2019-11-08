@@ -42,5 +42,6 @@ sol2 = pp.add_solution({
 sol_list[2] = sol2
 
 run = EpyPhreeqc('demo2.inp',sol_list, pp)
-run.steady_state()
-print(run.solver.models.pipes[run.solver.net.links['1'].uid[0]].output_state[0])
+run.steady_state(sol_list)
+
+

@@ -6,13 +6,11 @@ class FIFO(object):
     
     def __init__(self,volume, sol_list):
         self.volume = volume
-        comp = len(sol_list)
-        self.state =  [{'x0':0, 'x1':1, 'q': pd.Series(np.zeros(comp))}] 
+        self.state =  [{'x0':0, 'x1':1, 'q':{sol_list[0]:1}}] 
         # Need to write a function to auto update the size of the PHREEQC solution matrix
         self.output = []
         self.ready = False 
         self.output_state = []
-        self.state[0]['q'][0] = 1
         
     def reset_output(self):
         self.output_state = []
@@ -85,7 +83,7 @@ class FIFO(object):
         new_state = []
         for parcel1 in self.state:
             for parcel2 in self.state:
-                if parcel1['x1'] == parcel2['x0'] and parcel1['q'].equals(parcel2['q']):
+                if parcel1['x1'] == parcel2['x0'] and parcel1['q']==(parcel2['q']):
                     new_state.append({
                     'x0': parcel1['x0'],
                     'x1': parcel2['x1'],
@@ -94,4 +92,5 @@ class FIFO(object):
                     self.state.remove(parcel1)
                     self.state.remove(parcel2)
                     self.state = new_state + self.state
+                    self.state = sorted(self.state, key=lambda a:a['x1'])
                     self.merge_parcels()

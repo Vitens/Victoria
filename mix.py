@@ -13,19 +13,31 @@ class MIX(object):
     def reset_outflow(self):
         self.outflow = []
     
+
+    def merge_load(self, dict1, dict2, volume):
+        
+        dict3 = {**dict1, **dict2}
+        
+        for key, value in dict3.items():
+            if key in dict1 and key in dict2:
+                dict3[key] = value * volume + dict1[key]
+            if key not in dict1 and key in dict2:
+                dict3[key] = value * volume
+        return dict3
+
+
     def mix(self, inflow, demand):
     
         xcure = 0
-        count = 0
         self.mixed_parcels = []
         self.sorted_parcels = sorted(inflow, key=lambda a:a['x1'])
-    
+
         for parcel1 in self.sorted_parcels:
             if parcel1['x1'] <= xcure:
                 continue
 
             #mixture = pd.Series(np.zeros(len(self.sorted_parcels[0]['q'])))
-            mixture = 0 
+            mixture = {}
             
             total_volume = 0
             cell_volume= 0
@@ -40,19 +52,23 @@ class MIX(object):
                 # Calculate volume fraction * volume of each pipe
                 rv =  (parcel1['x1']-xcure) * parcel2['volume']
                 # Calculate mixture 
-                mixture += parcel2['q'].multiply(rv)
+                mixture = self.merge_load(mixture,parcel2['q'],rv)
                 cell_volume += rv
-    
+
+
+            for charge in mixture:
+                mixture[charge] = round(mixture[charge] / cell_volume,10)
+
             total_volume -= demand
             self.mixed_parcels.append({
                 'x0': xcure,
                 'x1': parcel1['x1'],
-                'q': mixture.divide(cell_volume),
+                'q': mixture,
                 'volume': total_volume
             })
-            self.mixed_parcels[count]['q'] = self.mixed_parcels[count]['q'].round(10)
+            
             xcure = parcel1['x1']
-            count += 1
+           
     
     
     def parcels_out(self, flows_out):
@@ -73,15 +89,12 @@ class MIX(object):
         self.outflow = output
        
     
-    def emitter(self, node, shift_volume):
+    def emitter(self, node, shift_volume,sol_list):
         self.mixed_parcels = []
-        comp = len(self.sol_list)
-        q= pd.DataFrame(np.zeros((comp,comp)))
-        for i in range(comp):
-            q[i][i] = 1
+        q= {sol_list[1]:1}
             
         # Required for the model
-        self.outflow = [[[shift_volume,q[1]]]]
+        self.outflow = [[[shift_volume,q]]]
         
         # For easier access later, assume that the phreeqc solution is constant. 
         self.mixed_parcels.append({
