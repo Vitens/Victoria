@@ -3,6 +3,7 @@ from phreeqpython import PhreeqPython
 from epynet import Network
 
 pp = PhreeqPython()
+# File for quickly testing the code, will be redundant in the future
 # PHREEQC SOLUTION INPUT #####
 
 sol_list = {}

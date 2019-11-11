@@ -4,6 +4,8 @@ import math
 
 
 class Models(object):
+    # Models class, which mainly calls the required model classes
+    # Might be redundant
 
     def __init__(self, network, sol_list):
         self.nodes = {}

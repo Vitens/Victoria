@@ -42,9 +42,12 @@ class Water_quality(object):
             for parcel in models.pipes[link.uid].state:
                 mix_temp = {}
 
+                # Make dict entry for each phreeqc solutions with its
+                # respective volume fraction
                 for sol in parcel['q']:
                     mix_temp[sol] = parcel['q'][sol]
 
+                # Calculate the phreeqc solution mixture and store it
                 output_temp.append({
                     'x0': parcel['x0'],
                     'x1': parcel['x1'],
@@ -53,7 +56,7 @@ class Water_quality(object):
             self.q_pipes[link.uid] = output_temp
 
     def get_quality_nodes(self, network, species, unit):
-
+        # Returns the species concentration in the requested units
         output = {}
         for node in network.nodes:
             output_temp = []
@@ -70,7 +73,7 @@ class Water_quality(object):
         return output
 
     def get_quality_pipes(self, network, species, unit):
-
+        # Returns the species concentration in the requested units
         output = {}
         for link in network.links:
             output_temp = []

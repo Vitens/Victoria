@@ -14,7 +14,7 @@ class MIX(object):
         self.outflow = []
 
     def merge_load(self, dict1, dict2, volume):
-
+        # Function for mixing PHREEQC solutions at nodes
         dict3 = {**dict1, **dict2}
 
         for key, value in dict3.items():
@@ -25,9 +25,10 @@ class MIX(object):
         return dict3
 
     def mix(self, inflow, demand):
-
+        # Main function for mixing parcels at nodes
         xcure = 0
         self.mixed_parcels = []
+        # Sort parcels along their x1 coordinate
         self.sorted_parcels = sorted(inflow, key=lambda a: a['x1'])
 
         for parcel1 in self.sorted_parcels:
@@ -66,6 +67,7 @@ class MIX(object):
             xcure = parcel1['x1']
 
     def parcels_out(self, flows_out):
+        # Assigns parcels flowing out to the correct downstream pipe
         self.outflow = []
         output = []
         total_flow = sum(flows_out)
@@ -83,6 +85,8 @@ class MIX(object):
         self.outflow = output
 
     def emitter(self, node, shift_volume, sol_list):
+        # Special function for when the node is an emitter, source of PHREEQC
+        # solutions flowing through the network
         self.mixed_parcels = []
         q = {sol_list[1]: 1}
 
