@@ -5,11 +5,12 @@ from phreeqpython import PhreeqPython
 
 pp = PhreeqPython()
 
+
 class TestFlows(unittest.TestCase):
-    # Test volumetric flows of the pipes and
+    # Test volumetric flows of the pipes
 
     def setUp(self):
-        ## PHREEQC solutions 
+        # PHREEQC solutions
         sol_list = {}
         sol0 = pp.add_solution({'pH': 7})
         sol_list[0] = sol0
@@ -26,9 +27,9 @@ class TestFlows(unittest.TestCase):
         for link in self.run.solver.net.links:
             self.flows[link.uid] = self.run.solver.models.pipes[link.uid].output_state[0]['volume']
 
-
     def test_flow1(self):
-        self.assertEqual(round(self.flows['1'],2),137.61)
+        self.assertEqual(round(self.flows['1'], 2), 137.61)
+
 
 if __name__ == '__main__':
     unittest.main()

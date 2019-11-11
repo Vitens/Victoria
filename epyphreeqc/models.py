@@ -1,6 +1,5 @@
 from fifo import FIFO
 from mix import MIX
-from fifo import FIFO
 import math
 
 
