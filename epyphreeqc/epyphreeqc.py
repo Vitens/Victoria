@@ -23,7 +23,3 @@ class EpyPhreeqc(object):
 
         self.quality.nodes(network, self.solver.models)
         self.quality.pipes(network, self.solver.models)
-
-    def tempadadda(self):
-        self.qw.quality_nodes(self.net, self.models)
-        self.qw.quality_pipes(self.net, self.models)
