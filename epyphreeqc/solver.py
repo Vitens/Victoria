@@ -26,7 +26,7 @@ class Solver(object):
         ready = all(list(self.models.pipes[link.uid[0]].ready for link in startnode.upstream_links))
         if not ready:
             return
-
+        
         # Check type of node
         if node_type == 'emitter':
             shift_volume = timestep * startnode.outflow
@@ -36,28 +36,26 @@ class Solver(object):
             # Collect all parcels flowing into the node
             inflow = []
             for link in startnode.upstream_links:
-                inflow += self.models.pipes[link.uid[0]].output_state
-
+                inflow += self.models.pipes[link.uid].output_state
             # Mix the parcels at the node
             demand = startnode.demand * timestep
             self.models.nodes[startnode.uid].mix(inflow, demand)
             # Assign downstream outflow matrix
             outflow = [abs(link.flow) for link in startnode.downstream_links]
-
             # Calculate the parcel size flowing to the downstream pipes
             self.models.nodes[startnode.uid].parcels_out(outflow)
-            self.models.nodes[startnode.uid].outflow
-
         flowcount = 0
 
         for link in startnode.downstream_links:
-
+            print("STARTNODE", startnode, "DOWNSTREAMLINK", link)
             # Push the parcels in the pipe and pull them
-            self.models.pipes[link.uid[0]].push_pull(self.models.nodes[startnode.uid].outflow[flowcount])
+            self.models.pipes[link.uid].push_pull(self.models.nodes[startnode.uid].outflow[flowcount])
+            
             # Merge neighbouring parcels with identical PHREEQC solution matrix
-            self.models.pipes[link.uid[0]].merge_parcels()
+            self.models.pipes[link.uid].merge_parcels()
             # Update ready state of the pipe
-            self.models.pipes[link.uid[0]].ready = True
+            self.models.pipes[link.uid].ready = True
             # Run trace from downstream node
+            
             flowcount += 1
             self.run_trace(link.downstream_node, 'junction', timestep, sol_list)
