@@ -59,17 +59,26 @@ class Water_quality(object):
         # Returns the species concentration in the requested units
         output = {}
         for node in network.nodes:
-            output_temp = []
-            for parcel in self.q_nodes[node.uid]:
-                output_temp.append({
-                    'x0': parcel['x0'],
-                    'x1': parcel['x1'],
+            # Only requests the first parcel of the list. This parcel is at the node
+            # at the requested moment
+            parcel = self.q_nodes[node.uid][0]
+            output[node.uid] = ({
                     'species': species,
                     'q': parcel['q'].total(species, unit),
-                    'units': unit,
-                    'volume': parcel['volume']
+                    'units': unit
                     })
-            output[node.uid] = output_temp
+
+
+            #for parcel in self.q_nodes[node.uid]:
+                #output_temp.append({
+                    #'x0': parcel['x0'],
+                    #'x1': parcel['x1'],
+                    #'species': species,
+                    #'q': parcel['q'].total(species, unit),
+                    #'units': unit,
+                    #'volume': parcel['volume']
+                    #})
+            #output[node.uid] = output_temp
         return output
 
     def get_quality_pipes(self, network, species, unit):

@@ -5,9 +5,9 @@ import pandas as pd
 class FIFO(object):
     # Class for pipes, which contain segregated parcels.
 
-    def __init__(self, volume, sol_list):
+    def __init__(self, volume, sol_dict):
         self.volume = volume
-        self.state = [{'x0': 0, 'x1': 1, 'q': {sol_list[0]: 1}}]
+        self.state = [{'x0': 0, 'x1': 1, 'q': {sol_dict[0]: 1}}]
         self.output = []
         self.ready = False
         self.output_state = []
