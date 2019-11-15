@@ -9,9 +9,11 @@ class EpyPhreeqc(object):
         self.quality = Water_quality(pp)
         self.output = []
 
-    def run(self, network, sol_dict, timestep, total_time, reporting_timestep):
+    def run(self, network, sol_dict, timestep,
+            start_time, total_time, reporting_timestep):
 
-        for t in range(0, total_time, timestep):
+        self.output = []
+        for t in range(start_time, total_time, timestep):
             # Timestep in minutes
             self.solver.step(network, timestep, sol_dict)
             output_temp = []
@@ -19,6 +21,7 @@ class EpyPhreeqc(object):
                 self.quality.nodes(network, self.solver.models)
                 self.quality.pipes(network, self.solver.models)
 
-                self.output.append(self.quality.get_quality_nodes(network, 'Na', 'mg'))
+                self.output.append(self.quality.get_quality_nodes(network,
+                                   'Na', 'mg'))
 
         return self.output

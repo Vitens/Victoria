@@ -74,7 +74,8 @@ class MIX(object):
         for flow in flows_out:
             temp = []
             for parcel in self.mixed_parcels:
-                parcel_volume = (parcel['x1']-parcel['x0'])*flow/total_flow*parcel['volume']
+                parcel_volume = ((parcel['x1']-parcel['x0']) *
+                                 flow/total_flow*parcel['volume'])
                 parcel_volume = round(parcel_volume, 8)
                 temp.append([parcel_volume, parcel['q']])
             output.append(temp)

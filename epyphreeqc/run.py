@@ -47,5 +47,5 @@ network = Network('demo2.inp')
 network.solve()
 timestep = 1
 
-#run = EpyPhreeqc(network, sol_list, pp)
-#run.run(network, sol_list, timestep, 1)
+# run = EpyPhreeqc(network, sol_list, pp)
+# run.run(network, sol_list, timestep, 1)
