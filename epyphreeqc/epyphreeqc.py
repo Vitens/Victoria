@@ -13,10 +13,14 @@ class EpyPhreeqc(object):
             start_time, total_time, reporting_timestep):
 
         self.output = []
+        # Check the flow direction in each pipe
+        self.solver.check_connections(network)
+
         for t in range(start_time, total_time, timestep):
             # Timestep in minutes
             self.solver.step(network, timestep, sol_dict)
             output_temp = []
+
             if t % reporting_timestep == 0:
                 self.quality.nodes(network, self.solver.models)
                 self.quality.pipes(network, self.solver.models)

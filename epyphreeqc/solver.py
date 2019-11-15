@@ -13,7 +13,7 @@ class Solver(object):
 
     def step(self, network, timestep, sol_dict):
         # Solve the volume fractions for the whole network for one timestep
-        # Loop over all nodes reservoir nodes
+        # Run trace starting at each reservoir node
         for emitter in network.nodes[network.nodes.inflow == 0]:
             nodetype = 'emitter'
             self.run_trace(emitter, nodetype, timestep, sol_dict)
@@ -23,7 +23,7 @@ class Solver(object):
 
     def run_trace(self, startnode, node_type, timestep, sol_dict):
         # Check whether all upstream pipes are ready
-        ready = all(list(self.models.pipes[link.uid[0]].ready for link in startnode.upstream_links))
+        ready = all(list(self.models.pipes[link.uid].ready for link in startnode.upstream_links))
         if not ready:
             return
 
@@ -47,13 +47,29 @@ class Solver(object):
         flowcount = 0
 
         for link in startnode.downstream_links:
-            # Push the parcels in the pipe and pull them
-            self.models.pipes[link.uid].push_pull(self.models.nodes[startnode.uid].outflow[flowcount])
-            # Merge neighbouring parcels with identical PHREEQC solution matrix
-            self.models.pipes[link.uid].merge_parcels()
-            # Update ready state of the pipe
-            self.models.pipes[link.uid].ready = True
-            # Run trace from downstream node
-
+            if link.link_type == 'pipe':
+                # Push the parcels in the pipe and pull them
+                self.models.pipes[link.uid].push_pull(self.models.nodes[startnode.uid].outflow[flowcount])
+                # Merge neighbouring parcels with identical PHREEQC solution matrix
+                self.models.pipes[link.uid].merge_parcels()
+                # Update ready state of the pipe
+                self.models.pipes[link.uid].ready = True
+                # Run trace from downstream node
+            elif link.link_type == 'pump' or link.link_type == 'valve':
+                if link.flow == 0:
+                    self.models.pipes[link.uid].ready = True
+                    flowcount += 1
+                else:
+                    self.models.pipes[link.uid].pump_valve(self.models.nodes[startnode.uid].outflow[flowcount])
+                    self.models.pipes[link.uid].ready = True
             flowcount += 1
             self.run_trace(link.downstream_node, 'junction', timestep, sol_dict)
+
+    def check_connections(self, network):
+        # Check whether the flow direction of a pipe has shifted.
+        for link in network.links:
+            if (link.upstream_node == self.models.pipes[link.uid].upstream_node and
+                 link.downstream_node == self.models.pipes[link.uid].downstream_node):
+                continue
+            else:
+                self.models.pipes[link.uid].reverse_parcels(link.downstream_node, link.upstream_node)

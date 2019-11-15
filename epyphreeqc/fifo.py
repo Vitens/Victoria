@@ -11,10 +11,13 @@ class FIFO(object):
         self.output = []
         self.ready = False
         self.output_state = []
+        self.downstream_node = []
+        self.upstream_node = []
 
-    def reset_output(self):
-        self.output_state = []
-        self.ready = False
+    def connections(self, downstream, upstream):
+
+        self.downstream_node = downstream
+        self.upstream_node = upstream
 
     def push_pull(self, volumes):
 
@@ -95,3 +98,41 @@ class FIFO(object):
                     self.state = new_state + self.state
                     self.state = sorted(self.state, key=lambda a: a['x1'])
                     self.merge_parcels()
+
+    def reverse_parcels(self, downstream, upstream):
+        # Reverse the parcels incase the flow switches around and
+        # store the new down- and upstream nodes
+        temp_state = []
+        for parcel in self.state:
+            x0_temp = abs(1-parcel['x1'])
+            x1_temp = abs(1-parcel['x0'])
+
+            temp_state.append({
+                'x0': x0_temp,
+                'x1': x1_temp,
+                'q': parcel['q']
+            })
+
+        self.state = sorted(temp_state, key=lambda a: a['x1'])
+        self.downstream_node = downstream
+        self.upstream_node = upstream
+
+    def pump_valve(self, volumes):
+        # Special function for link_type: 'pump' and 'valve'
+        # Pump and Valve do not have a length so NO residence time
+
+        total_volume = sum([v[0] for v in volumes])
+        x0 = 0
+        output_state = []
+
+        for (v, q) in volumes:
+            x1 = x0 + v / total_volume
+            output_state.append({
+                'x0': x0,
+                'x1': x1,
+                'q': q,
+                'volume': total_volume
+            })
+            x0 = x1
+
+        self.output_state = output_state

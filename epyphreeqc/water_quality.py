@@ -67,18 +67,6 @@ class Water_quality(object):
                     'q': parcel['q'].total(species, unit),
                     'units': unit
                     })
-
-
-            #for parcel in self.q_nodes[node.uid]:
-                #output_temp.append({
-                    #'x0': parcel['x0'],
-                    #'x1': parcel['x1'],
-                    #'species': species,
-                    #'q': parcel['q'].total(species, unit),
-                    #'units': unit,
-                    #'volume': parcel['volume']
-                    #})
-            #output[node.uid] = output_temp
         return output
 
     def get_quality_pipes(self, network, species, unit):
