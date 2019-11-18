@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 timestep = 1  # minutes,  timestep for solving PHREEQC
 time_end = 3  # hours,   maximum duration of the simulation
 time_report = 1  # minutes  timestep for reporting the result
-time_start = 0 # Start time
+time_start = 0  # Start time
 
 # Convert input to minutes
 time_end = time_end * 60
@@ -18,7 +18,7 @@ network1 = Network('quality1.inp')
 pp = PhreeqPython()
 solutions = {}
 sol0 = pp.add_solution({
-    'Na': 0,
+    'Ca': 0,
     'units': 'mg/l'
 })
 solutions[0] = sol0
@@ -27,12 +27,12 @@ solutions[0] = sol0
 run_quality = EpyPhreeqc(network1, solutions, pp)
 # Initialize Phreeqpython for the reservoirs
 sol1 = pp.add_solution({
-    'Na': 1,
+    'Ca': 1,
     'units': 'mg/l'
 })
 
 sol7 = pp.add_solution({
-    'Na': 0.5,
+    'Ca': 0.5,
     'units': 'mg/l'
 })
 solutions[network1.reservoirs['1'].uid] = sol1
@@ -44,14 +44,14 @@ network1.solve()
 conc = run_quality.run(network1, solutions, timestep, time_start, time_end, time_report)
 
 t = [tt/60 for tt in range(0, time_end, time_report)]
-Na2 = [x['2']['q'] for x in conc]
-Na3 = [x['3']['q'] for x in conc]
-Na4 = [x['4']['q'] for x in conc]
+Ca2 = [x['2']['q'] for x in conc]
+Ca3 = [x['3']['q'] for x in conc]
+Ca4 = [x['4']['q'] for x in conc]
 
-plt.plot(t, Na2)
-plt.plot(t, Na3)
-plt.plot(t, Na4)
+plt.plot(t, Ca2)
+plt.plot(t, Ca3)
+plt.plot(t, Ca4)
 plt.xlabel('Time [hours]')
-plt.ylabel('Concentration of Na [mg/l]')
+plt.ylabel('Concentration of Ca [mg/l]')
 plt.legend(['Node 2', 'Node 3', 'Node 4'])
 plt.show()
