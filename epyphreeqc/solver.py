@@ -14,7 +14,11 @@ class Solver(object):
     def step(self, network, timestep, sol_dict):
         # Solve the volume fractions for the whole network for one timestep
         # Run trace starting at each reservoir node
-        for emitter in network.nodes[network.nodes.inflow == 0]:
+        #for emitter in network.nodes[network.nodes.inflow == 0]:
+            #nodetype = 'emitter'
+            #self.run_trace(emitter, nodetype, timestep, sol_dict)
+
+        for emitter in network.reservoirs:
             nodetype = 'emitter'
             self.run_trace(emitter, nodetype, timestep, sol_dict)
 
@@ -26,7 +30,6 @@ class Solver(object):
         ready = all(list(self.models.pipes[link.uid].ready for link in startnode.upstream_links))
         if not ready:
             return
-
         # Check type of node
         if node_type == 'emitter':
             shift_volume = timestep * startnode.outflow/60
@@ -38,7 +41,7 @@ class Solver(object):
             for link in startnode.upstream_links:
                 inflow += self.models.pipes[link.uid].output_state
             # Mix the parcels at the node
-            demand = startnode.demand/60 * timestep
+            demand = startnode.demand/60 * timestep  # Adjust demand to m3/minute
             self.models.nodes[startnode.uid].mix(inflow, demand)
             # Assign downstream outflow matrix
             outflow = [abs(link.flow) for link in startnode.downstream_links]
@@ -49,9 +52,9 @@ class Solver(object):
         for link in startnode.downstream_links:
             if link.link_type == 'pipe':
                 # Push the parcels in the pipe and pull them
-                self.models.pipes[link.uid].push_pull(self.models.nodes[startnode.uid].outflow[flowcount])
-                # Merge neighbouring parcels with identical PHREEQC solution matrix
-                self.models.pipes[link.uid].merge_parcels()
+                self.models.pipes[link.uid].push_pull_v2(self.models.nodes[startnode.uid].outflow[flowcount])
+                # Merge neighbouring parcels with identical PHREEQC solution mixture
+                # self.models.pipes[link.uid].merge_parcels()
                 # Update ready state of the pipe
                 self.models.pipes[link.uid].ready = True
                 # Run trace from downstream node
@@ -62,6 +65,7 @@ class Solver(object):
                 else:
                     self.models.pipes[link.uid].pump_valve(self.models.nodes[startnode.uid].outflow[flowcount])
                     self.models.pipes[link.uid].ready = True
+            # Run trace from downstream node
             flowcount += 1
             self.run_trace(link.downstream_node, 'junction', timestep, sol_dict)
 

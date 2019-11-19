@@ -20,7 +20,7 @@ class FIFO(object):
         self.upstream_node = upstream
 
     def push_pull(self, volumes):
-
+        
         # Push part of function
         # Calculate total volume of pushed section
         total_volume = sum([v[0] for v in volumes])
@@ -136,3 +136,83 @@ class FIFO(object):
             x0 = x1
 
         self.output_state = output_state
+
+    def push_pull_v2(self, volumes):
+        
+    # Push part of function
+        # Calls recursive function 
+        self.push_in(volumes)
+
+        # Pull part of function
+        new_state = []
+        output = []
+        output_state = []
+
+        for parcel in self.state:
+            # Need to round 10th decimal in order to
+            # prevent the creation of "ghost volumes"
+            parcel['x0'] = round(parcel['x0'], 10)
+            parcel['x1'] = round(parcel['x1'], 10)
+
+            x0 = parcel['x0']
+            x1 = parcel['x1']
+
+            vol = (x1 - 1) * self.volume if x0 < 1 else (x1 - x0) * self.volume
+            if x1 > 1:
+                output.append([vol, parcel['q']])
+                if x0 < 1:
+                    parcel['x1'] = 1
+                    new_state.append(parcel)
+            else:
+                new_state.append(parcel)
+
+        volume = sum([v[0] for v in output])
+        x0 = 0
+
+        for (v, q) in output:
+            x1 = x0 + v / volume
+            output_state.append({
+                'x0': x0,
+                'x1': x1,
+                'q': q,
+                'volume': volume
+            })
+            x0 = x1
+        self.state = new_state
+        self.output_state = output_state
+        self.ready = True
+
+    def push_in(self, volumes):
+        # Recursive function for pushing parcels into the pipe
+        # Seems to be more stable
+        if not volumes:
+            return
+            
+        v = volumes[len(volumes)-1][0]
+        q = volumes[len(volumes)-1][1]
+
+        fraction = v/self.volume
+        self.state = [{'x0': s['x0']+fraction,
+                      'x1':s['x1']+fraction, 'q':s['q']} for s in self.state]
+        x0 = 0
+
+        new_state = []
+        if q == self.state[0]['q']:
+            self.state[0]['x0'] = 0
+    
+        else:
+            x1 = x0 + v / self.volume
+            new_state.append({
+                'x0': x0,
+                'x1': x1,
+                'q': q
+                })
+
+        self.state = new_state + self.state
+    
+        volumes.remove([v,q])
+    
+        if not volumes:
+            return
+        else:
+            self.push_in(volumes)

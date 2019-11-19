@@ -53,7 +53,7 @@ class MIX(object):
                 cell_volume += rv
 
             for charge in mixture:
-                mixture[charge] = round(mixture[charge] / cell_volume, 10)
+                mixture[charge] = round(mixture[charge] / cell_volume, 5)
             total_volume -= demand
 
             self.mixed_parcels.append({
@@ -85,6 +85,7 @@ class MIX(object):
         # Special function for when the node is an emitter, source of PHREEQC
         # solutions flowing through the network
         self.mixed_parcels = []
+        
         q = {}
         q[sol_dict[node.uid]] = 1
 

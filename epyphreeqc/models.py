@@ -5,7 +5,7 @@ import math
 
 class Models(object):
     # Models class, which mainly calls the required model classes
-    # Might be redundant
+    # Might be redundant in a future update
 
     def __init__(self, network, sol_dict):
         self.nodes = {}
