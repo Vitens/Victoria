@@ -9,6 +9,7 @@ class MIX(object):
         self.outflow = []
         self.sol_dict = sol_dict
         self.mixed_parcels = []
+        self.flowcount = []
 
     def reset_outflow(self):
         self.outflow = []
@@ -53,7 +54,7 @@ class MIX(object):
                 cell_volume += rv
 
             for charge in mixture:
-                mixture[charge] = round(mixture[charge] / cell_volume, 5)
+                mixture[charge] = round(mixture[charge] / cell_volume, 3)
             total_volume -= demand
 
             self.mixed_parcels.append({
@@ -70,13 +71,15 @@ class MIX(object):
         self.outflow = []
         output = []
         total_flow = sum(flows_out)
+        if total_flow <= 1E-7:
+            return
 
         for flow in flows_out:
             temp = []
             for parcel in self.mixed_parcels:
                 parcel_volume = ((parcel['x1']-parcel['x0']) *
                                  flow/total_flow*parcel['volume'])
-                parcel_volume = round(parcel_volume, 8)
+                parcel_volume = round(parcel_volume, 6)
                 temp.append([parcel_volume, parcel['q']])
             output.append(temp)
         self.outflow = output
@@ -85,7 +88,7 @@ class MIX(object):
         # Special function for when the node is an emitter, source of PHREEQC
         # solutions flowing through the network
         self.mixed_parcels = []
-        
+
         q = {}
         q[sol_dict[node.uid]] = 1
 

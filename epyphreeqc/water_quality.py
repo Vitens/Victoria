@@ -6,6 +6,7 @@ class Water_quality(object):
 
     def __init__(self, pp):
         self.mixture = []
+        self.q_nodes = {}
         self.pp = pp
 
     def nodes(self, network, models):
@@ -59,10 +60,36 @@ class Water_quality(object):
         # Returns the species concentration in the requested units
         output = {}
         for node in network.nodes:
+            if not self.q_nodes[node.uid]:
+                output[node.uid] = ({
+                        'species': species,
+                        'q': 0,
+                        'units': unit
+                        })
+            else:
+                # Only requests the first parcel of the list. This parcel is at the node
+                # at the requested moment
+                parcel = self.q_nodes[node.uid][0]
+                output[node.uid] = ({
+                        'species': species,
+                        'q': parcel['q'].total(species, unit),
+                        'units': unit
+                        })
+        return output
+
+    def get_quality_node(self, node, species, unit):
+        # single node quality
+        if not self.q_nodes[node]:
+            output = ({
+                    'species': species,
+                    'q': 0,
+                    'units': unit
+                    })
+        else:
             # Only requests the first parcel of the list. This parcel is at the node
             # at the requested moment
-            parcel = self.q_nodes[node.uid][0]
-            output[node.uid] = ({
+            parcel = self.q_nodes[node][0]
+            output = ({
                     'species': species,
                     'q': parcel['q'].total(species, unit),
                     'units': unit

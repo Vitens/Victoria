@@ -20,7 +20,7 @@ class FIFO(object):
         self.upstream_node = upstream
 
     def push_pull(self, volumes):
-        
+
         # Push part of function
         # Calculate total volume of pushed section
         total_volume = sum([v[0] for v in volumes])
@@ -117,11 +117,18 @@ class FIFO(object):
         self.downstream_node = downstream
         self.upstream_node = upstream
 
-    def pump_valve(self, volumes):
+    def pump_valve(self, flow, volumes):
         # Special function for link_type: 'pump' and 'valve'
         # Pump and Valve do not have a length so NO residence time
 
         total_volume = sum([v[0] for v in volumes])
+
+        vol_updated = []
+        for (v, q) in volumes:
+
+            vol = v / total_volume * flow
+            vol_updated.append([vol, q])
+
         x0 = 0
         output_state = []
 
@@ -131,17 +138,25 @@ class FIFO(object):
                 'x0': x0,
                 'x1': x1,
                 'q': q,
-                'volume': total_volume
+                'volume': flow
             })
             x0 = x1
 
         self.output_state = output_state
 
-    def push_pull_v2(self, volumes):
-        
-    # Push part of function
-        # Calls recursive function 
-        self.push_in(volumes)
+    def push_pull_v2(self, flow, volumes):
+
+        # Push part of function
+        # Calls recursive function
+        total_volume = sum([v[0] for v in volumes])
+        vol_updated = []
+
+        for (v, q) in volumes:
+
+            vol = v / total_volume * flow
+            vol_updated.append([vol, q])
+
+        self.push_in(vol_updated)
 
         # Pull part of function
         new_state = []
@@ -187,7 +202,7 @@ class FIFO(object):
         # Seems to be more stable
         if not volumes:
             return
-            
+
         v = volumes[len(volumes)-1][0]
         q = volumes[len(volumes)-1][1]
 
@@ -199,7 +214,7 @@ class FIFO(object):
         new_state = []
         if q == self.state[0]['q']:
             self.state[0]['x0'] = 0
-    
+
         else:
             x1 = x0 + v / self.volume
             new_state.append({
@@ -209,9 +224,9 @@ class FIFO(object):
                 })
 
         self.state = new_state + self.state
-    
-        volumes.remove([v,q])
-    
+
+        volumes.remove([v, q])
+
         if not volumes:
             return
         else:

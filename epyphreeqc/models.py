@@ -20,7 +20,8 @@ class Models(object):
     def load_pipes(self, network, sol_dict):
         for link in network.links:
             if link.link_type == 'pipe':
-                volume = 1/4 * math.pi * link.length * (link.diameter * 10**-3)**2
+                volume = 1/4 * math.pi * link.length * (
+                    link.diameter * 10**-3)**2
                 self.pipes[link.uid] = FIFO(volume, sol_dict)
             elif link.link_type == 'pump':
                 volume = 0
