@@ -1,10 +1,6 @@
 from .solver import Solver
 from .quality import Quality
 
-import datetime
-import openpyxl
-import os
-
 
 class Victoria(object):
 
