@@ -4,10 +4,9 @@ import pandas as pd
 
 class MIX(object):
     # Class for mixing pipes at nodes, -> mixing parcels at nodes
-    def __init__(self, sol_dict):
+    def __init__(self):
         self.sorted_parcels = []
         self.outflow = []
-        self.sol_dict = sol_dict
         self.mixed_parcels = []
         self.flowcount = []
 
@@ -84,13 +83,13 @@ class MIX(object):
             output.append(temp)
         self.outflow = output
 
-    def emitter(self, node, shift_volume, sol_dict):
+    def emitter(self, node, shift_volume, input_sol):
         # Special function for when the node is an emitter, source of PHREEQC
         # solutions flowing through the network
         self.mixed_parcels = []
 
         q = {}
-        q[sol_dict[node.uid]] = 1
+        q[input_sol[node.uid]] = 1
 
         # Required for the model
         self.outflow = [[[shift_volume, q]]]

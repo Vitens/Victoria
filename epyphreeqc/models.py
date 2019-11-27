@@ -11,11 +11,11 @@ class Models(object):
         self.nodes = {}
         self.pipes = {}
         self.load_pipes(network, sol_dict)
-        self.load_nodes(network, sol_dict)
+        self.load_nodes(network)
 
-    def load_nodes(self, network, sol_dict):
+    def load_nodes(self, network):
         for node in network.nodes:
-            self.nodes[node.uid] = MIX(sol_dict)
+            self.nodes[node.uid] = MIX()
 
     def load_pipes(self, network, sol_dict):
         for link in network.links:
