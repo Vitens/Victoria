@@ -113,7 +113,7 @@ class Quality(object):
             output[link.uid] = output_temp
         return output
 
-    def get_solution_node(self, node, element, units='mmol'):
+    def get_solution_node(self, node, element, units):
 
         if not self.models.nodes[node.uid].mixed_parcels:
             return 0
@@ -126,7 +126,7 @@ class Quality(object):
         # Calculate the phreeqc solution mixture
         mixture = self.pp.mix_solutions(mix_temp)
         
-        return mixture.total(element,units)
+        return mixture.total(element, units)
         
     def get_mixture_node(self, node):
 
@@ -135,7 +135,7 @@ class Quality(object):
 
         return self.models.nodes[node.uid].mixed_parcels[0]['q']
         
-    def get_parcels(self, link, element, units='mmol'):
+    def get_parcels(self, link, element, units):
 
         if not self.models.pipes[link.uid].state:
             return 0
@@ -155,9 +155,9 @@ class Quality(object):
             output.append({
                     'x0': parcel['x0'],
                     'x1': parcel['x1'],
-                    'species': species,
+                    'species': element,
                     'q': mixture.total(element, units),
-                    'units': unit
+                    'units': units
                     })
         return output
 

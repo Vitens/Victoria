@@ -31,11 +31,11 @@ class Victoria(object):
     def check_flow_direction(self):
         self.solver.check_connections()
 
-    def get_solution_node(self, node, element, units):
+    def get_solution_node(self, node, element, unit='mmol'):
         return self.quality.get_solution_node(node, element, units)
 
     def get_mixture_node(self, node):
         return self.quality.get_mixture_node(node)
 
-    def get_parcels(self, link, element, units):
+    def get_parcels(self, link, element, units='mmol'):
         return self.quality.get_parcels(link, element, units)
