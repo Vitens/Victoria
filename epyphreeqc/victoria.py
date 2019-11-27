@@ -6,7 +6,7 @@ import openpyxl
 import os
 
 
-class EpyPhreeqc(object):
+class Victoria(object):
 
     def __init__(self, network, sol_dict, pp):
         self.net = network
