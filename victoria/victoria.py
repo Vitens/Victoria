@@ -28,11 +28,14 @@ class Victoria(object):
         for link in self.net.links:
             self.solver.models.pipes[link.uid].ready = False
 
-    def get_solution_node(self, node):
-        return self.quality.get_solution_node(node)
-    
+    def check_flow_direction(self):
+        self.solver.check_connections()
+
+    def get_solution_node(self, node, element, units):
+        return self.quality.get_solution_node(node, element, units)
+
     def get_mixture_node(self, node):
         return self.quality.get_mixture_node(node)
-    
-    def get_parcels(self, link):
-        return self.quality.get_parcels(link)
+
+    def get_parcels(self, link, element, units):
+        return self.quality.get_parcels(link, element, units)

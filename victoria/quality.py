@@ -128,7 +128,7 @@ class Quality(object):
         
         return mixture.total(element,units)
         
-    def get_mixture(self, node):
+    def get_mixture_node(self, node):
 
         if not self.models.nodes[node.uid].mixed_parcels:
             return 0
