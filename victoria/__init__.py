@@ -1,1 +1,1 @@
-from .epyphreeqc import EpyPhreeqc
+from .victoria import Victoria

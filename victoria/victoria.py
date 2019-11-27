@@ -1,5 +1,5 @@
-from solver import Solver
-from quality import Quality
+from .solver import Solver
+from .quality import Quality
 
 import datetime
 import openpyxl

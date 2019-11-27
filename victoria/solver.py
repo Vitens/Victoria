@@ -1,4 +1,4 @@
-from models import Models
+from .models import Models
 
 
 class Solver(object):
