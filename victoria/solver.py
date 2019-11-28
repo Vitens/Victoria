@@ -52,7 +52,7 @@ class Solver(object):
 
                 if link.link_type == 'pipe':
                     # Push the parcels in the pipe and pull them
-                    self.models.pipes[link.uid].push_pull_v2(flow_in, self.models.nodes[startnode.uid].outflow[flow_cnt])
+                    self.models.pipes[link.uid].push_pull(flow_in, self.models.nodes[startnode.uid].outflow[flow_cnt])
 
                 elif link.link_type == 'pump' or link.link_type == 'valve':
                     # Push the parcels instantly through the pump/valve

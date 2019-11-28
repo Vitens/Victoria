@@ -32,9 +32,9 @@ class Victoria(object):
 
     def get_mixture_node(self, node):
         return self.quality.get_mixture_node(node)
-                            
+
     def get_solution_pipe(self, link, element, units='mmol'):
         return self.quality.get_conc_parcels(link, element, units)
-    
+
     def get_mixture_pipe(self, link):
         return self.quality.get_parcels(link)
