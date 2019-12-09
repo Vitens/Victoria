@@ -2,11 +2,11 @@ import pandas as pd
 
 
 class FIFO(object):
-    # Class for pipes, which contain segregated parcels.
+    # Class for all link objects
 
-    def __init__(self, volume, sol_dict):
+    def __init__(self, volume=0):
         self.volume = volume
-        self.state = [{'x0': 0, 'x1': 1, 'q': {sol_dict[0]: 1}}]
+        self.state = []
         self.output = []
         self.ready = False
         self.output_state = []
@@ -36,35 +36,44 @@ class FIFO(object):
         self.downstream_node = downstream
         self.upstream_node = upstream
 
-    def pump_valve(self, flow, volumes):
-        # Special function for link_type: 'pump' and 'valve'
-        # Pump and Valve do not have a length so NO residence time
+    def push_in(self, volumes):
+        # Recursive function for pushing parcels into the pipe
+        # Seems to be more stable
+        if not volumes:
+            return
 
-        total_volume = sum([v[0] for v in volumes])
+        v = volumes[len(volumes)-1][0]
+        q = volumes[len(volumes)-1][1]
 
-        vol_updated = []
-        for (v, q) in volumes:
-
-            vol = v / total_volume * flow
-            vol_updated.append([vol, q])
-
+        fraction = v/self.volume
+        self.state = [{'x0': s['x0']+fraction,
+                      'x1':s['x1']+fraction, 'q':s['q']} for s in self.state]
         x0 = 0
-        output_state = []
 
-        for (v, q) in volumes:
-            x1 = x0 + v / total_volume
-            output_state.append({
+        new_state = []
+        if q == self.state[0]['q']:
+            self.state[0]['x0'] = 0
+
+        else:
+            x1 = x0 + v / self.volume
+            new_state.append({
                 'x0': x0,
                 'x1': x1,
-                'q': q,
-                'volume': flow
-            })
-            x0 = x1
+                'q': q
+                })
 
-        self.output_state = output_state
+        self.state = new_state + self.state
 
+        volumes.remove([v, q])
+
+        if not volumes:
+            return
+        else:
+            self.push_in(volumes)
+
+
+class Pipe(FIFO):
     def push_pull(self, flow, volumes):
-
         # Push part of function
         # Calls recursive function
         total_volume = sum([v[0] for v in volumes])
@@ -75,7 +84,7 @@ class FIFO(object):
             vol = v / total_volume * flow
             vol_updated.append([vol, q])
 
-        self.push_in(vol_updated)
+        super().push_in(vol_updated)
 
         # Pull part of function
         new_state = []
@@ -116,37 +125,83 @@ class FIFO(object):
         self.output_state = output_state
         self.ready = True
 
-    def push_in(self, volumes):
-        # Recursive function for pushing parcels into the pipe
-        # Seems to be more stable
-        if not volumes:
-            return
+    def fill(self, input_sol):
+        self.state = [{
+                'x0': 0,
+                'x1': 1,
+                'q': input_sol
+                }]
+        self.output_state = [{
+                'x0': 0,
+                'x1': 1,
+                'q': input_sol,
+                'volume': 1
+        }]
 
-        v = volumes[len(volumes)-1][0]
-        q = volumes[len(volumes)-1][1]
 
-        fraction = v/self.volume
-        self.state = [{'x0': s['x0']+fraction,
-                      'x1':s['x1']+fraction, 'q':s['q']} for s in self.state]
+class Pump(FIFO):
+    def push_pull(self, flow, volumes):
+        total_volume = sum([v[0] for v in volumes])
+
+        vol_updated = []
+        for (v, q) in volumes:
+
+            vol = v / total_volume * flow
+            vol_updated.append([vol, q])
+
         x0 = 0
+        output_state = []
 
-        new_state = []
-        if q == self.state[0]['q']:
-            self.state[0]['x0'] = 0
-
-        else:
-            x1 = x0 + v / self.volume
-            new_state.append({
+        for (v, q) in volumes:
+            x1 = x0 + v / total_volume
+            output_state.append({
                 'x0': x0,
                 'x1': x1,
-                'q': q
-                })
+                'q': q,
+                'volume': flow
+            })
+            x0 = x1
 
-        self.state = new_state + self.state
+        self.output_state = output_state
 
-        volumes.remove([v, q])
+    def fill(self, input_sol):
+        self.output_state = [{
+                'x0': 0,
+                'x1': 1,
+                'q': input_sol,
+                'volume': 1
+        }]
 
-        if not volumes:
-            return
-        else:
-            self.push_in(volumes)
+
+class Valve(FIFO):
+    def push_pull(self, flow, volumes):
+        total_volume = sum([v[0] for v in volumes])
+
+        vol_updated = []
+        for (v, q) in volumes:
+
+            vol = v / total_volume * flow
+            vol_updated.append([vol, q])
+
+        x0 = 0
+        output_state = []
+
+        for (v, q) in volumes:
+            x1 = x0 + v / total_volume
+            output_state.append({
+                'x0': x0,
+                'x1': x1,
+                'q': q,
+                'volume': flow
+            })
+            x0 = x1
+
+        self.output_state = output_state
+
+    def fill(self, input_sol):
+        self.output_state = [{
+                'x0': 0,
+                'x1': 1,
+                'q': input_sol,
+                'volume': 1
+        }]

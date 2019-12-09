@@ -1,31 +1,55 @@
-from .fifo import FIFO
-from .mix import MIX
-import math
+from .fifo import FIFO, Pipe, Pump, Valve
+from .mix import Junction, Reservoir, Tank
+from math import pi
 
 
 class Models(object):
-    # Models class, which mainly calls the required model classes
-    # Might be redundant in a future update
+    # Models class
 
-    def __init__(self, network, sol_dict):
+    def __init__(self, network):
         self.nodes = {}
+        self.junctions = {}
+        self.reservoirs = {}
+        self.tanks = {}
+
+        self.links = {}
         self.pipes = {}
-        self.load_pipes(network, sol_dict)
+        self.pumps = {}
+        self.valves = {}
+
+        self.load_links(network)
         self.load_nodes(network)
 
     def load_nodes(self, network):
-        for node in network.nodes:
-            self.nodes[node.uid] = MIX()
+        for junction in network.junctions:
+            node = Junction()
+            self.junctions[junction.uid] = node
+            self.nodes[junction.uid] = node
 
-    def load_pipes(self, network, sol_dict):
-        for link in network.links:
-            if link.link_type == 'pipe':
-                volume = 1/4 * math.pi * link.length * (
-                    link.diameter * 10**-3)**2
-                self.pipes[link.uid] = FIFO(volume, sol_dict)
-            elif link.link_type == 'pump':
-                volume = 0
-                self.pipes[link.uid] = FIFO(volume, sol_dict)
-            elif link.link_type == 'valve':
-                volume = 0
-                self.pipes[link.uid] = FIFO(volume, sol_dict)
+        for reservoir in network.reservoirs:
+            node = Reservoir()
+            self.reservoirs[reservoir.uid] = node
+            self.nodes[reservoir.uid] = node
+
+        for tank in network.tanks:
+            node = Tank(tank.initvolume)
+            self.tanks[tank.uid] = node
+            self.nodes[tank.uid] = node
+
+    def load_links(self, network):
+        for pipe in network.pipes:
+            pipe_volume = 1/4 * pi * pipe.length * (
+                    pipe.diameter * 10**-3)**2
+            link = Pipe(volume=pipe_volume)
+            self.pipes[pipe.uid] = link
+            self.links[pipe.uid] = link
+
+        for pump in network.pumps:
+            link = Pump()
+            self.pumps[pump.uid] = link
+            self.links[pipe.uid] = link
+
+        for valve in network.valves:
+            link = Valve()
+            self.valves[valve.uid] = link
+            self.links[valve.uid] = link

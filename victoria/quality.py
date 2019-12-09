@@ -60,3 +60,21 @@ class Quality(object):
 
     def get_parcels(self, link):
         return self.models.pipes[link.uid].state
+
+    def get_avg_conc_pipe(self, link, element, units):
+        if not self.models.pipes[link.uid].state:
+            return 0
+
+        average_conc = 0
+        
+        for parcel in self.models.pipes[link.uid].state:
+            mix_temp = {}
+            for sol in parcel['q']:
+                mix_temp[sol] = parcel['q'][sol]
+
+            # Calculate the phreeqc solution mixture and store it
+            vol_frac = parcel['x1'] - parcel['x0']
+            mixture = self.pp.mix_solutions(mix_temp)
+            average_conc += mixture.total(element, units)*vol_frac
+            
+        return average_conc
