@@ -57,7 +57,7 @@ class Solver(object):
     def fill_network(self, node, input_sol):
         # Run trace method for filling the whole network
         # Check whether all upstream pipes are ready
-        
+
         self.filled_links = []
 
         ready = all(list(self.models.links[link.uid].ready for link in node.upstream_links))
@@ -78,5 +78,5 @@ class Solver(object):
             self.models.links[link.uid].ready = True
             # Run trace from downstream node
             self.fill_network(link.downstream_node, input_sol)
-            
+
             self.filled_links.append(link)
