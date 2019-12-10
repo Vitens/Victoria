@@ -96,7 +96,7 @@ class Reservoir(MIX):
         self.mixed_parcels = []
 
         q = {}
-        q[input_sol[node.uid]] = 1
+        q[input_sol[node.uid].number] = 1
         shift_volume = timestep * node.outflow/3600
 
         # Required for the model

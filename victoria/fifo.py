@@ -12,6 +12,7 @@ class FIFO(object):
         self.output_state = []
         self.downstream_node = []
         self.upstream_node = []
+        self.solution_list = []
 
     def connections(self, downstream, upstream):
 

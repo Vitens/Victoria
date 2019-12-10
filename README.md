@@ -1,20 +1,40 @@
 ## Example Usage
 ```python
-# load an Epanet network
+# load an Epanet network, PhreeqPython and Victoria
 from epynet import Network
+from phreeqpython import PhreeqPython
 from victoria import Victoria
-
 network = Network('network.inp')
-
+pp = PhreeqPython()
+model = Victoria(network,pp)
+# Fill the links in the network from the reservoir
+solutions = {}
+sol0 = pp.add_solution({'Ca': 0,'units': 'mg/l'})
+sol1 = pp.add_solution({'Ca': 1,'units': 'mg/l'})
+solutions[0] = sol0
+solutions[network.reservoirs['1'].uid] = sol1
+# Solve the models
+timestep_victoria = 60 # seconds
+network.solve()
+model.step(timestep_victoria, solutions)
+# Calculate concentration of Ca
+model.get_conc_node(network.nodes['2'], 'Ca', 'mg')
+model.get_conc_pipe(network.links['1'], 'Ca', 'mg')
 ```
+## Installation
+* Clone or download repository
+* ```python setup.py install```
+
 ## Requirements
 * 64 bit Python 3
-* EPYNET Python Package
+* EPYNET 
+* PhreeqPython
 
+## About Vitens
 
+Vitens is the largest drinking water company in The Netherlands. We deliver top quality drinking water to 5.6 million people and companies in the provinces Flevoland, Fryslân, Gelderland, Utrecht and Overijssel and some municipalities in Drenthe and Noord-Holland. Annually we deliver 350 million m³ water with 1,400 employees, 100 water treatment works and 49,000 kilometres of water mains.
 
-
-
+One of our main focus points is using advanced water quality, quantity and hydraulics models to further improve and optimize our treatment and distribution processes.
 
 ## Licence
 

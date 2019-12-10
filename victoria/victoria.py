@@ -9,6 +9,7 @@ class Victoria(object):
         self.solver = Solver(network)
         self.quality = Quality(pp, self.solver.models)
         self.output = []
+        self.pp = pp
 
     def step(self, timestep, input_sol):
         # Solve the volume fractions for the whole network for one timestep
@@ -40,7 +41,7 @@ class Victoria(object):
             try:
                 for link in unfilled:
                     q = {}
-                    q[input_sol[0]] = 1
+                    q[input_sol[0].number] = 1
                     self.solver.models.pipes[link.uid].fill(q)
             except KeyError:
                 print('No initial solution defined for 0')
@@ -54,30 +55,58 @@ class Victoria(object):
             try:
                 for pipe in self.net.pipes:
                     q = {}
-                    q[input_sol[0]] = 1
+                    q[input_sol[0].number] = 1
                     self.solver.models.pipes[pipe.uid].fill(q)
             except KeyError:
                 print('No initial solution defined, solution for Key = 0')
                 raise
 
     def check_flow_direction(self):
+        # Compares the current flow direction with the previous flow direction,
+        # reverses the list if required
         self.solver.check_connections()
 
     def garbage_collect(self):
         self.registered_solutions = []
-        pass
+        for pipe in self.solver.models.pipes.values():
+            for parcel in pipe.state:
+                for i in parcel['q']:
+                    self.registered_solutions.append(i)
 
-    def get_solution_node(self, node, element, units='mmol'):
+        registered_solutions = set(self.registered_solutions)
+        phreeqc_solutions = set(self.pp.get_solution_list())
+        to_forget = phreeqc_solutions - registered_solutions
+        if len(to_forget) > 0:
+            self.pp.remove_solutions(to_forget)
+
+    def get_conc_node(self, node, element, units='mmol'):
+        # Calculate the concentration of desired species exiting the node
+        # at this exact moment
         return self.quality.get_conc_node(node, element, units)
 
+    def get_conc_node_avg(self, node, element, units='mmol'):
+        # Calculate the average concentration of a species exitting
+        # the node during the last timestep
+        return self.quality.get_conc_node_avg(node, element, units)
+
     def get_mixture_node(self, node):
+        # Return the PHREEQC solution number with its respective
+        # volume fraction
         return self.quality.get_mixture_node(node)
 
-    def get_solution_pipe(self, link, element, units='mmol'):
-        return self.quality.get_conc_parcels(link, element, units)
+    def get_mixture_node_avg(self, node):
+        # Return the PHREEQC solution number with its respective
+        # volume fraction averaged over the last timestep
+        return self.quality.get_mixture_node_avg(node)
 
-    def get_mixture_pipe(self, link):
+    def get_conc_pipe(self, link, element, units='mmol'):
+        # Calculate the concentration of the element in each parcel in a pipe
+        return self.quality.get_conc_pipe(link, element, units)
+
+    def get_conc_pipe_avg(self, link, element, units='mmol'):
+        # Calculate the average concentration of an element over the whole pipe
+        return self.quality.get_conc_pipe_avg(link, element, units)
+
+    def get_parcels(self, link):
+        # Return the parcels in a pipe
         return self.quality.get_parcels(link)
-
-    def get_avg_solution_pipe(self, link, element, units='mmol'):
-        return self.quality.get_avg_conc_pipe(link, element, units)

@@ -77,6 +77,6 @@ class Solver(object):
 
             self.models.links[link.uid].ready = True
             # Run trace from downstream node
-            self.fill_network(link.downstream_node, input_sol)
-
             self.filled_links.append(link)
+
+            self.fill_network(link.downstream_node, input_sol)
