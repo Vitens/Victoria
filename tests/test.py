@@ -6,8 +6,9 @@ from phreeqpython import PhreeqPython
 
 class Test_line_network(unittest.TestCase):
     # Test simple network consisting of 4 nodes in a line
-    def setUpClass(self):
-        self.net = Network(inputfile="tests/Case1.inp")
+    def setUp(self):
+        #self.net = Network(inputfile="tests/Case1.inp")
+        self.net = Network(inputfile="Case1.inp")
         self.pp = PhreeqPython()
         self.vic = Victoria(self.net, self.pp)
         self.solutions = {}
@@ -36,25 +37,41 @@ class Test_line_network(unittest.TestCase):
         self.assertEqual(len(self.net.valves), len(models.valves))
 
     def test2(self):
-        # Fill the network
+        # Fill the network with a standard solution
         self.net.solve()
         self.vic.fill_network(self.solutions, from_reservoir=False)
         # Test the initial concentrations of Ca
-        self.assertEqual(self.vic.get_conc_pipe(self.net.links['1'], 'Ca', 'mg'), 0)
-        self.assertEqual(self.vic.get_conc_pipe(self.net.links['2'], 'Ca', 'mg'), 0)
-        self.assertEqual(self.vic.get_conc_pipe(self.net.links['3'], 'Ca', 'mg'), 0)
-        self.assertEqual(self.vic.get_conc_pipe(self.net.links['6'], 'Ca', 'mg'), 0)
+        self.assertEqual(self.vic.get_conc_pipe_avg(self.net.links['1'], 'Ca', 'mg'), 0)
+        self.assertEqual(self.vic.get_conc_pipe_avg(self.net.links['2'], 'Ca', 'mg'), 0)
+        self.assertEqual(self.vic.get_conc_pipe_avg(self.net.links['3'], 'Ca', 'mg'), 0)
+        self.assertEqual(self.vic.get_conc_pipe_avg(self.net.links['6'], 'Ca', 'mg'), 0)
 
     def test3(self):
+        # Fill the network with the initial reservoir solution
+        self.net.solve()
+        self.vic.fill_network(self.solutions, from_reservoir=True)
+        # Test the initial concentrations of Ca
+        self.assertAlmostEqual(self.vic.get_conc_pipe_avg(self.net.links['1'], 'Ca', 'mg'), 1, 4)
+        self.assertAlmostEqual(self.vic.get_conc_pipe_avg(self.net.links['2'], 'Ca', 'mg'), 1, 4)
+        self.assertAlmostEqual(self.vic.get_conc_pipe_avg(self.net.links['3'], 'Ca', 'mg'), 1, 4)
+        self.assertAlmostEqual(self.vic.get_conc_pipe_avg(self.net.links['6'], 'Ca', 'mg'), 1, 4)
+
+    def test4(self):
+        # Test the residence time in the pipes. Each pipe has a residence time of 1000 seconds
+
         # Time parameters Victoria
         time_end = 2  # hours
-        timestep_network = 60  # minutes
-        timestep_victoria = 1  # second
-
+        timestep_network = 60  #  minutes
+        timestep_victoria = 1  #  second
         # Convert units to seconds
         time_end *= 3600
         timestep_network *= 60
         time_count = 0
+
+        # Fill the network
+        self.net.solve()  #  Need to run Epynet for a single timestep 
+        self.vic.fill_network(self.solutions, from_reservoir=False)
+
         for t1 in range(0, time_end, timestep_network):
             self.net.solve(simtime=t1)
             self.vic.check_flow_direction()

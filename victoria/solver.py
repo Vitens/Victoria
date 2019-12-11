@@ -29,30 +29,30 @@ class Solver(object):
 
         for link in node.downstream_links:
 
-            if abs(link.flow)/3600*timestep <= 1*10**(-dgt):
-                self.models.links[link.uid].ready = True
-                self.models.nodes[node.uid].flowcount += 1
-                continue
+            #if abs(link.flow)/3600*timestep <= 1*10**(-dgt):
+                #elf.models.links[link.uid].ready = True
+                #self.models.nodes[node.uid].flowcount += 1
+                #continue
 
-            else:
-                flow_cnt = self.models.nodes[node.uid].flowcount
-                flow_in = round(abs(link.flow)/3600 * timestep, dgt)
+           # else:
+            flow_cnt = self.models.nodes[node.uid].flowcount
+            flow_in = round(abs(link.flow)/3600 * timestep, dgt)
 
-                self.models.links[link.uid].push_pull(flow_in, self.models.nodes[node.uid].outflow[flow_cnt])
+            self.models.links[link.uid].push_pull(flow_in, self.models.nodes[node.uid].outflow[flow_cnt])
 
-                self.models.links[link.uid].ready = True
-                # Run trace from downstream node
-                self.models.nodes[node.uid].flowcount += 1
-                self.run_trace(link.downstream_node, timestep, input_sol)
+            self.models.links[link.uid].ready = True
+            # Run trace from downstream node
+            self.models.nodes[node.uid].flowcount += 1
+            self.run_trace(link.downstream_node, timestep, input_sol)
 
     def check_connections(self):
         # Check whether the flow direction of a pipe has shifted.
         for link in self.net.links:
-            if (link.upstream_node == self.models.pipes[link.uid].upstream_node and
-               link.downstream_node == self.models.pipes[link.uid].downstream_node):
+            if (link.upstream_node == self.models.links[link.uid].upstream_node and
+               link.downstream_node == self.models.links[link.uid].downstream_node):
                 continue
             else:
-                self.models.pipes[link.uid].reverse_parcels(link.downstream_node, link.upstream_node)
+                self.models.links[link.uid].reverse_parcels(link.downstream_node, link.upstream_node)
 
     def fill_network(self, node, input_sol):
         # Run trace method for filling the whole network
