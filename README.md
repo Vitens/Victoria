@@ -1,3 +1,4 @@
+Victoria is a model for tracking the quality of water in a water distribution network.  
 ## Example Usage
 ```python
 # load an Epanet network, PhreeqPython and Victoria
