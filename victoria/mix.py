@@ -48,7 +48,6 @@ class Junction(MIX):
         self.mixed_parcels = []
         demand = round(node.demand/3600 * timestep, 7)
 
-        count = 0
         # Sort parcels along their x1 coordinate
         self.sorted_parcels = sorted(inflow, key=lambda a: a['x1'])
         for parcel1 in self.sorted_parcels:
@@ -82,7 +81,7 @@ class Junction(MIX):
                 'q': mixture,
                 'volume': total_volume
             })
-        
+
             xcure = parcel1['x1']
 
         flows_out = [abs(link.flow) for link in node.downstream_links]

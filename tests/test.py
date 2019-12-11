@@ -7,7 +7,7 @@ from phreeqpython import PhreeqPython
 class Test_line_network(unittest.TestCase):
     # Test simple network consisting of 4 nodes in a line
     def setUp(self):
-        #self.net = Network(inputfile="tests/Case1.inp")
+        # self.net = Network(inputfile="tests/Case1.inp")
         self.net = Network(inputfile="Case1.inp")
         self.pp = PhreeqPython()
         self.vic = Victoria(self.net, self.pp)
@@ -69,7 +69,7 @@ class Test_line_network(unittest.TestCase):
         time_count = 0
 
         # Fill the network
-        self.net.solve()  #  Need to run Epynet for a single timestep 
+        self.net.solve()  #  Need to run Epynet for a single timestep
         self.vic.fill_network(self.solutions, from_reservoir=False)
 
         for t1 in range(0, time_end, timestep_network):

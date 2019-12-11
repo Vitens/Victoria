@@ -28,13 +28,6 @@ class Solver(object):
         self.models.nodes[node.uid].flowcount = 0
 
         for link in node.downstream_links:
-
-            #if abs(link.flow)/3600*timestep <= 1*10**(-dgt):
-                #elf.models.links[link.uid].ready = True
-                #self.models.nodes[node.uid].flowcount += 1
-                #continue
-
-           # else:
             flow_cnt = self.models.nodes[node.uid].flowcount
             flow_in = round(abs(link.flow)/3600 * timestep, dgt)
 
