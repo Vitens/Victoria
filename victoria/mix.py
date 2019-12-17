@@ -22,7 +22,7 @@ class MIX(object):
         return dict3
 
     def parcels_out(self, flows_out):
-        # Assigns parcels flowing out to the correct downstream pipe
+        # Assigns parcels flowing out to the appropiate pipe
         self.outflow = []
         output = []
         total_flow = sum(flows_out)
@@ -41,7 +41,7 @@ class MIX(object):
 
 
 class Junction(MIX):
-
+    # Junction MIX subclass
     def mix(self, inflow, node, timestep, input_sol):
         # Main function for mixing parcels at nodes
         xcure = 0
@@ -85,11 +85,11 @@ class Junction(MIX):
             xcure = parcel1['x1']
 
         flows_out = [abs(link.flow) for link in node.downstream_links]
-        return super().parcels_out(flows_out)
+        super().parcels_out(flows_out)
 
 
 class Reservoir(MIX):
-
+    # Reservoir MIX subclass
     def mix(self, inflow, node, timestep, input_sol):
         # Special function for when the node is an emitter, source of PHREEQC
         # solutions flowing through the network
@@ -111,31 +111,189 @@ class Reservoir(MIX):
                 })
 
 
-class Tank(MIX):
+class Tank_CSTR(MIX):
+    # CSTR Tank MIX subclass
+    # Ideal and instanteneous mixing is assumed in the tank
     def __init__(self, initvolume):
         self.volume = initvolume
-        self.mixture = []
+        self.mixture = {}
+        self.mixed_parcels = []
 
     def mix(self, inflow, node, timestep, input_sol):
 
-        demand_tank = node.demand
         volume_tank = node.volume
 
         flows_out = [abs(link.flow) for link in node.downstream_links]
 
+        self.mixed_parcels = []
         mixture = {}
         total_volume = 0
 
         # Calculate the mixture of all parcels flowing into the tank:
-        for flow in inflow:
-            for parcel in flow:
-                rv = (parcel['x1']-parcel['x0']) * parcel['volume']
-                mixture = super().merge_load(mixture, parcel['q'], rv)
-                total_volume += rv
+        for parcel in inflow:
+            rv = (parcel['x1']-parcel['x0']) * parcel['volume']
+            mixture = super().merge_load(mixture, parcel['q'], rv)
+            total_volume += rv
         for charge in mixture:
-            mixture[charge] = round(mixture[charge] / total_volume, 3)
+            mixture[charge] = round(mixture[charge] / total_volume, 4)
 
+        # Determine fraction of inflow solution in the tank mixture solution
         frac = (1 - exp(-(total_volume/volume_tank)))
 
-        for charge in mixture:
-            mixture[charge] = mixture[charge] * frac
+        volume_out = node.outflow/3600*timestep
+
+        new_solution = {}
+        new_solution = super().merge_load(new_solution, mixture, frac)
+        new_solution = super().merge_load(new_solution, self.mixture, 1-frac)
+
+        solution_out = {}
+        solution_out = super().merge_load(solution_out, self.mixture, 0.5)
+        solution_out = super().merge_load(solution_out, new_solution, 0.5)
+
+        self.mixed_parcels.append({
+            'x0': 0,
+            'x1': 1,
+            'q': solution_out,
+            'volume': volume_out
+        })
+
+        self.mixture = new_solution
+
+        flows_out = [abs(link.flow) for link in node.downstream_links]
+        super().parcels_out(flows_out)
+
+
+class Tank_LIFO(MIX):
+    # LIFO Tank MIX subclass
+    # Parcels inside tank are stored on Last In First Out principle
+    # parcel position is relative to the max tank volume
+    def __init__(self, maxvolume):
+        self.maxvolume = maxvolume
+        self.state = []
+        self.mixed_parcels = []
+
+    def mix(self, inflow, node, timestep, input_sol):
+
+        if not node.downstream_links:
+            # If no downstream links, the tank must be in the filling state
+            for parcel in inflow:
+                volume = (parcel['x1']-parcel['x0']) * parcel['volume']
+                shift = volume / self.maxvolume
+
+                self.state = [{'x0': s['x0']+shift,
+                               'x1':s['x1']+shift, 'q':s['q']}
+                              for s in self.state]
+                # Only form new parcels if previous parcel is not identical
+                new_state = []
+                if parcel['q'] == self.state[0]['q']:
+                    self.state['x0'] = 0
+                else:
+                    x0 = 0
+                    x1 = x0 + shift
+                    new_state.append({
+                        'x0': x0,
+                        'x1': x1,
+                        'q': parcel['q']
+                    })
+                self.state = new_state + self.state
+
+        elif sum(node.downstream_links.flow) > 0:
+            # If the tank is emptying
+            # Determine the total volume all pipes exiting the tank
+            flows_out = [abs(link.flow) for link in node.downstream_links]
+            vol_out = sum(flows_out)*3600*timestep
+            shift = vol_out/self.maxvolume
+            # Update the position of each parcel
+            self.state = [{'x0': s['x0']-shift,
+                           'x1':s['x1']-shift, 'q':s['q']} for s in self.state]
+
+            xcure = 1
+            for parcel in self.state:
+                vol = abs(parcel['x0']) * self.maxvolume if x1 > 0 \
+                        else (x1 - x0) * self.maxvolume
+                excess = vol/vol_out
+                if parcel['x0'] < 0:
+                    x0 = xcure - excess
+                    self.mixed_parcels.append({
+                        'x0': x0,
+                        'x1': xcure,
+                        'q': parcel['q'],
+                        'volume': vol_out
+                    })
+                    xcure = x0
+                    if parcel['x1'] > 0:
+                        parcel['x0'] = 0
+                        new_state.append(parcel)
+                else:
+                    new_state.append(parcel)
+            super().parcels_out(flows_out)
+
+
+class Tank_FIFO(MIX):
+    # FIFO Tank MIX subclass
+    # Parcels in the tank are stored on First In First Out principle
+    # the parcel position is relative to the max tank volume
+    def __init__(self, volume):
+        self.volume = volume
+        self.volume_prev = volume
+        self.state = []
+        self.mixed_parcels = []
+
+    def mix(self, inflow, node, timestep, input_sol):
+        for parcel in inflow:
+            # Determine correction factor for change in total volume
+            factor = self.volume_prev / self.volume
+
+            # Calculate the shift in parcel position relative to the changed
+            # volume
+            volume = (parcel['x1']-parcel['x0']) * parcel['volume']
+            shift = volume / self.volume
+
+            self.state = [{'x0': s['x0']*factor+shift,
+                           'x1':s['x1']*factor+shift,
+                           'q':s['q']}
+                          for s in self.state]
+
+            # Only form new parcels if previous parcel is not identical
+            new_state = []
+            if parcel['q'] == self.state[0]['q']:
+                self.state['x0'] = 0
+            else:
+                x1 = 0
+                x0 = x1 + shift
+                new_state.append({
+                    'x0': x0,
+                    'x1': x1,
+                    'q': parcel['q']
+                })
+            self.state = new_state + self.state
+
+            self.volume_prev = self.volume
+
+        # Determine the total volume all pipes exiting the tank
+        new_state = []
+        output = []
+        flows_out = [abs(link.flow) for link in node.downstream_links]
+        vol_out = sum(flows_out)*3600*timestep
+        x0 = 0
+        for parcel in self.state:
+            vol = (x1 - 1) * self.volume if x0 < 1 else (x1 - x0) * self.volume
+            if parcel['x1'] > 1:
+                x1 = x0 + vol/vol_out
+                output.append({
+                    'x0': x0,
+                    'x1': x1,
+                    'q': parcel['q'],
+                    'volume': vol_out
+                })
+                if parcel['x0'] < 1:
+                    parcel['x1'] = 1
+                    new_state.append(parcel)
+                x0 = x1
+            else:
+                new_state.append(parcel)
+
+        self.mixed_parcels = output
+        self.state = new_state
+
+        super().parcels_out(flows_out)

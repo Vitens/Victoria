@@ -1,5 +1,5 @@
 from .fifo import FIFO, Pipe, Pump, Valve
-from .mix import Junction, Reservoir, Tank
+from .mix import Junction, Reservoir, Tank_CSTR, Tank_FIFO, Tank_LIFO
 from math import pi
 
 
@@ -32,7 +32,9 @@ class Models(object):
             self.nodes[reservoir.uid] = node
 
         for tank in network.tanks:
-            node = Tank(tank.initvolume)
+            node = Tank_CSTR(tank.initvolume)
+            # node = Tank_FIFO(tank.maxvolume)
+            # node = Tank_LIFO(tank.volume)
             self.tanks[tank.uid] = node
             self.nodes[tank.uid] = node
 

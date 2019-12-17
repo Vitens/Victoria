@@ -1,15 +1,13 @@
-from .models import Models
-
-
 class Solver(object):
     # Solves the main calculation loop for water quality.
     # requires a solved epynet network as input
 
-    def __init__(self, network):
+    def __init__(self, models, network):
         self.output = []
         self.net = network
         # Construct model
-        self.models = Models(network)
+        self.models = models
+        self.filled_links = []
 
     def run_trace(self, node, timestep, input_sol):
         # Main solver method
@@ -51,8 +49,6 @@ class Solver(object):
         # Run trace method for filling the whole network
         # Check whether all upstream pipes are ready
 
-        self.filled_links = []
-
         ready = all(list(self.models.links[link.uid].ready for link in node.upstream_links))
         if not ready:
             return
@@ -67,7 +63,6 @@ class Solver(object):
         for link in node.downstream_links:
             sol = self.models.nodes[node.uid].outflow[0][0][1]
             self.models.links[link.uid].fill(sol)
-
             self.models.links[link.uid].ready = True
             # Run trace from downstream node
             self.filled_links.append(link)

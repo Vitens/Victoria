@@ -1,13 +1,15 @@
 from .solver import Solver
 from .quality import Quality
+from .models import Models
 
 
 class Victoria(object):
 
     def __init__(self, network, pp):
         self.net = network
-        self.solver = Solver(network)
-        self.quality = Quality(pp, self.solver.models)
+        self.models = Models(network)
+        self.solver = Solver(self.models, network)
+        self.quality = Quality(pp, self.models)
         self.output = []
         self.pp = pp
 
@@ -23,7 +25,7 @@ class Victoria(object):
 
     def fill_network(self, input_sol, from_reservoir=True):
         # Fill the network with initial solution
-        if from_reservoir:
+        if from_reservoir is True:
             # Fill the whole network with reservoir solution, while
             # considering the mix ratio. Links not filled with run_trace
             # are filled with a standard solution
@@ -51,6 +53,7 @@ class Victoria(object):
                 self.solver.models.links[link.uid].ready = False
 
         else:
+            print
             # Fill the whole network with an initial solution
             try:
                 for pipe in self.net.pipes:
@@ -110,3 +113,13 @@ class Victoria(object):
     def get_parcels(self, link):
         # Return the parcels in a pipe
         return self.quality.get_parcels(link)
+
+    def get_properties_node(self, node):
+        # Returns the pH, specific condunctivity and temperature exiting
+        # the node at this moment
+        return self.quality.get_properties_node(node)
+
+    def get_properties_node_avg(self, node):
+        # Returns the pH, specific condnctivity and temperature averaged
+        # over the last timestep
+        return self.quality.get_properties_node_avg(node)

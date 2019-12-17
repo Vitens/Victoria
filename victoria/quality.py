@@ -110,3 +110,41 @@ class Quality(object):
             average_conc += mixture.total(element, units)*vol_frac
 
         return average_conc
+
+    def get_properties_node(self, node):
+        # Calculate the concentration of desired species exiting the node
+        # at this exact moment
+        if not self.models.nodes[node.uid].mixed_parcels:
+            return 0
+
+        parcel = self.models.nodes[node.uid].mixed_parcels[0]
+        mix_temp = {}
+        for sol in parcel['q']:
+            phreeqc_sol = self.pp.get_solution(sol)
+            mix_temp[phreeqc_sol] = parcel['q'][sol]
+        # Calculate the phreeqc solution mixture
+        mixture = self.pp.mix_solutions(mix_temp)
+        temp = [mixture.pH, mixture.sc, mixture.temperature]
+
+        return temp
+
+    def get_properties_node_avg(self, node):
+        # Calculate the average concentration of a species exitting
+        # the node during the last timestep
+        if not self.models.nodes[node.uid].mixed_parcels:
+            return 0
+
+        temp = [0, 0, 0]
+
+        for parcel in self.models.nodes[node.uid].mixed_parcels:
+            mix_temp = {}
+            for sol in parcel['q']:
+                phreeqc_sol = self.pp.get_solution(sol)
+                mix_temp[phreeqc_sol] = parcel['q'][sol]
+            parcel_mix = self.pp.mix_solutions(mix_temp)
+            frac = (parcel['x1'] - parcel['x0'])
+            temp[0] += frac * parcel_mix.pH
+            temp[1] += frac * parcel_mix.sc
+            temp[2] += frac * parcel_mix.temperature
+
+        return temp

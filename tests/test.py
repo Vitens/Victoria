@@ -12,8 +12,8 @@ class Test_line_network(unittest.TestCase):
         self.pp = PhreeqPython()
         self.vic = Victoria(self.net, self.pp)
         self.solutions = {}
-        sol0 = self.pp.add_solution({'Ca': 0, 'units': 'mg/l'})
-        sol1 = self.pp.add_solution({'Ca': 1, 'units': 'mg/l'})
+        sol0 = self.pp.add_solution({'Ca': 0, 'units': 'mmol/l'})
+        sol1 = self.pp.add_solution({'Ca': 1, 'units': 'mmol/l'})
         self.solutions[0] = sol0
         self.solutions[self.net.reservoirs['1'].uid] = sol1
 
@@ -41,35 +41,35 @@ class Test_line_network(unittest.TestCase):
         self.net.solve()
         self.vic.fill_network(self.solutions, from_reservoir=False)
         # Test the initial concentrations of Ca
-        self.assertEqual(self.vic.get_conc_pipe_avg(self.net.links['1'], 'Ca', 'mg'), 0)
-        self.assertEqual(self.vic.get_conc_pipe_avg(self.net.links['2'], 'Ca', 'mg'), 0)
-        self.assertEqual(self.vic.get_conc_pipe_avg(self.net.links['3'], 'Ca', 'mg'), 0)
-        self.assertEqual(self.vic.get_conc_pipe_avg(self.net.links['6'], 'Ca', 'mg'), 0)
+        self.assertEqual(self.vic.get_conc_pipe_avg(self.net.links['1'], 'Ca', 'mmol'), 0)
+        self.assertEqual(self.vic.get_conc_pipe_avg(self.net.links['2'], 'Ca', 'mmol'), 0)
+        self.assertEqual(self.vic.get_conc_pipe_avg(self.net.links['3'], 'Ca', 'mmol'), 0)
+        self.assertEqual(self.vic.get_conc_pipe_avg(self.net.links['6'], 'Ca', 'mmol'), 0)
 
     def test3(self):
         # Fill the network with the initial reservoir solution
         self.net.solve()
         self.vic.fill_network(self.solutions, from_reservoir=True)
         # Test the initial concentrations of Ca
-        self.assertAlmostEqual(self.vic.get_conc_pipe_avg(self.net.links['1'], 'Ca', 'mg'), 1, 4)
-        self.assertAlmostEqual(self.vic.get_conc_pipe_avg(self.net.links['2'], 'Ca', 'mg'), 1, 4)
-        self.assertAlmostEqual(self.vic.get_conc_pipe_avg(self.net.links['3'], 'Ca', 'mg'), 1, 4)
-        self.assertAlmostEqual(self.vic.get_conc_pipe_avg(self.net.links['6'], 'Ca', 'mg'), 1, 4)
+        self.assertAlmostEqual(self.vic.get_conc_pipe_avg(self.net.links['1'], 'Ca', 'mmol'), 1, 4)
+        self.assertAlmostEqual(self.vic.get_conc_pipe_avg(self.net.links['2'], 'Ca', 'mmol'), 1, 4)
+        self.assertAlmostEqual(self.vic.get_conc_pipe_avg(self.net.links['3'], 'Ca', 'mmol'), 1, 4)
+        self.assertAlmostEqual(self.vic.get_conc_pipe_avg(self.net.links['6'], 'Ca', 'mmol'), 1, 4)
 
     def test4(self):
         # Test the residence time in the pipes. Each pipe has a residence time of 1000 seconds
 
         # Time parameters Victoria
         time_end = 2  # hours
-        timestep_network = 60  #  minutes
-        timestep_victoria = 1  #  second
+        timestep_network = 60  # minutes
+        timestep_victoria = 1  # second
         # Convert units to seconds
         time_end *= 3600
         timestep_network *= 60
         time_count = 0
 
         # Fill the network
-        self.net.solve()  #  Need to run Epynet for a single timestep
+        self.net.solve()  # Need to run Epynet for a single timestep
         self.vic.fill_network(self.solutions, from_reservoir=False)
 
         for t1 in range(0, time_end, timestep_network):
@@ -80,28 +80,28 @@ class Test_line_network(unittest.TestCase):
                 self.vic.step(timestep_victoria, self.solutions)
                 time_count += t2
                 if time_count == 999:
-                    node = self.vic.get_conc_node(self.net.nodes['2'], 'Ca', 'mg')
+                    node = self.vic.get_conc_node(self.net.nodes['2'], 'Ca', 'mmol')
                     self.assertAlmostEqual(node, 0, 4)
                 elif time_count == 1000:
-                    node = self.vic.get_conc_node(self.net.nodes['2'], 'Ca', 'mg')
+                    node = self.vic.get_conc_node(self.net.nodes['2'], 'Ca', 'mmol')
                     self.assertAlmostEqual(node, 1, 4)
                 elif time_count == 1999:
-                    node = self.vic.get_conc_node(self.net.nodes['3'], 'Ca', 'mg')
+                    node = self.vic.get_conc_node(self.net.nodes['3'], 'Ca', 'mmol')
                     self.assertAlmostEqual(node, 0, 4)
                 elif time_count == 2000:
-                    node = self.vic.get_conc_node(self.net.nodes['3'], 'Ca', 'mg')
+                    node = self.vic.get_conc_node(self.net.nodes['3'], 'Ca', 'mmol')
                     self.assertAlmostEqual(node, 1, 4)
                 elif time_count == 2999:
-                    node = self.vic.get_conc_node(self.net.nodes['4'], 'Ca', 'mg')
+                    node = self.vic.get_conc_node(self.net.nodes['4'], 'Ca', 'mmol')
                     self.assertAlmostEqual(node, 0, 4)
                 elif time_count == 3000:
-                    node = self.vic.get_conc_node(self.net.nodes['4'], 'Ca', 'mg')
+                    node = self.vic.get_conc_node(self.net.nodes['4'], 'Ca', 'mmol')
                     self.assertAlmostEqual(node, 1, 4)
                 elif time_count == 3999:
-                    node = self.vic.get_conc_node(self.net.nodes['6'], 'Ca', 'mg')
+                    node = self.vic.get_conc_node(self.net.nodes['6'], 'Ca', 'mmol')
                     self.assertAlmostEqual(node, 0, 4)
                 elif time_count == 4000:
-                    node = self.vic.get_conc_node(self.net.nodes['6'], 'Ca', 'mg')
+                    node = self.vic.get_conc_node(self.net.nodes['6'], 'Ca', 'mmol')
                     self.assertAlmostEqual(node, 1, 4)
 
 

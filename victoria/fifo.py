@@ -39,7 +39,6 @@ class FIFO(object):
 
     def push_in(self, volumes):
         # Recursive function for pushing parcels into the pipe
-        # Seems to be more stable
         if not volumes:
             return
 
@@ -75,8 +74,9 @@ class FIFO(object):
 
 class Pipe(FIFO):
     def push_pull(self, flow, volumes):
+        # FIFO Pipe subclass
         # Push part of function
-        # Calls recursive function
+        # Gets the f
         total_volume = sum([v[0] for v in volumes])
         vol_updated = []
 
@@ -84,7 +84,8 @@ class Pipe(FIFO):
 
             vol = v / total_volume * flow
             vol_updated.append([vol, q])
-
+        # Calls recursive function for pushing parcels into the pipe
+        # Is more or less an inverse for loop
         super().push_in(vol_updated)
 
         # Pull part of function
@@ -141,6 +142,9 @@ class Pipe(FIFO):
 
 
 class Pump(FIFO):
+    # FIFO Pump subclass
+    # Since a pump in Epynet has no length, what enters is immediately
+    # pushed to the exit
     def push_pull(self, flow, volumes):
         total_volume = sum([v[0] for v in volumes])
 
@@ -175,6 +179,9 @@ class Pump(FIFO):
 
 
 class Valve(FIFO):
+    # FIFO Valve subclass
+    # Since a valve in Epynet has no length, what enters is immediately
+    # pushed to the exit
     def push_pull(self, flow, volumes):
         total_volume = sum([v[0] for v in volumes])
 
