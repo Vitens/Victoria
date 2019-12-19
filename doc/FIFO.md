@@ -1,4 +1,4 @@
-# Link Class
+# FIFO: Main Link Class
 
 Victoria uses a Lagrangian time-based approach to track parcels along the pipes and nodes of a distribution network. For each parcel its position relative to the total volume of the pipe and its PHREEQC solution number or mixture of PHREEQC solutions numbers are tracked. With each PHREEQC solution number corresponding to all information about the solution such as temperature, pH and ion composition. 
 
