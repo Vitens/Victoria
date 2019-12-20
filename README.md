@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="https://github.com/michaeltan91/Victoria/blob/master/victoria.png" alt="Victoria Logo"/>
+</p>
+
+
 Victoria is a model for tracking the quality of water in a water distribution network.  
 ## Example Usage
 ```python
