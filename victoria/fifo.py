@@ -39,9 +39,11 @@ class FIFO(object):
 
     def push_in(self, volumes):
         # Recursive function for pushing parcels into the pipe
+        # Implemented to get the same effect as an inverse for loop
         if not volumes:
             return
 
+        # Gets the volume and charge of the last parcel in volumes
         v = volumes[len(volumes)-1][0]
         q = volumes[len(volumes)-1][1]
 
@@ -64,6 +66,7 @@ class FIFO(object):
 
         self.state = new_state + self.state
 
+        # Removes the last parcel from volumes
         volumes.remove([v, q])
 
         if not volumes:

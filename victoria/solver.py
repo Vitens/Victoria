@@ -13,14 +13,17 @@ class Solver(object):
         # Main solver method
         dgt = 7
         # Check whether all upstream pipes are ready
-        ready = all(list(self.models.links[link.uid].ready for link in node.upstream_links))
+        ready = all(list(self.models.links[link.uid].ready for link in
+                    node.upstream_links))
         if not ready:
             return
 
+        # Gather all parcels from upstream links
         inflow = []
         for link in node.upstream_links:
             inflow += self.models.links[link.uid].output_state
 
+        # Mix parcels from upstream links at node
         self.models.nodes[node.uid].mix(inflow, node, timestep, input_sol)
 
         self.models.nodes[node.uid].flowcount = 0
@@ -28,7 +31,7 @@ class Solver(object):
         for link in node.downstream_links:
             flow_cnt = self.models.nodes[node.uid].flowcount
             flow_in = round(abs(link.flow)/3600 * timestep, dgt)
-
+            # Push and Pull parcels into and from the downstream link
             self.models.links[link.uid].push_pull(flow_in, self.models.nodes[node.uid].outflow[flow_cnt])
 
             self.models.links[link.uid].ready = True
@@ -43,7 +46,8 @@ class Solver(object):
                link.downstream_node == self.models.links[link.uid].downstream_node):
                 continue
             else:
-                self.models.links[link.uid].reverse_parcels(link.downstream_node, link.upstream_node)
+                self.models.links[link.uid].reverse_parcels(link.downstream_node,
+                                                            link.upstream_node)
 
     def fill_network(self, node, input_sol):
         # Run trace method for filling the whole network

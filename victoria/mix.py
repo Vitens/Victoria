@@ -50,6 +50,7 @@ class Junction(MIX):
 
         # Sort parcels along their x1 coordinate
         self.sorted_parcels = sorted(inflow, key=lambda a: a['x1'])
+        # Mix parcels with overlapping coordinates
         for parcel1 in self.sorted_parcels:
             if parcel1['x1'] <= xcure:
                 continue
@@ -70,7 +71,8 @@ class Junction(MIX):
                 # Calculate mixture
                 mixture = super().merge_load(mixture, parcel2['q'], rv)
                 cell_volume += rv
-
+            # Adjust the volume fraction with the total volume of the
+            # mixed parcel
             for charge in mixture:
                 mixture[charge] = round(mixture[charge] / cell_volume, 3)
             total_volume -= demand
@@ -142,10 +144,14 @@ class Tank_CSTR(MIX):
 
         volume_out = node.outflow/3600*timestep
 
+        # Mix the PHREEQC solution mixture from the inflow with the mixture
+        # already present in the tank
         new_solution = {}
         new_solution = super().merge_load(new_solution, mixture, frac)
         new_solution = super().merge_load(new_solution, self.mixture, 1-frac)
 
+        # For the outflow solution mixture an average between the old and
+        # updated value is used
         solution_out = {}
         solution_out = super().merge_load(solution_out, self.mixture, 0.5)
         solution_out = super().merge_load(solution_out, new_solution, 0.5)

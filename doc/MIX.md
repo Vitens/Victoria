@@ -14,7 +14,8 @@ Where Q IN,n  and X k,IN,n respectively represent the volumetric flowrate and fr
 Standard node behavior, primarily the main node connecting sections of links.
 
 ## Reservoir Subclass
-Special node which acts as an starting point for the calculation of the water quality in the system.
+Special node which acts as an starting point for the calculation of the water quality in the system.It uses the outflow property from Epynet to assign the proper size of the flow into the downstream pipes.
+A PHREEQC solution needs to be assigned to each reservoir in order for Victoria to work.
 
 ## Tank CSTR Subclass
 The water entering the tank is instantaneously mixed with the water already present in the tank. The volume fraction of the water entering the tank can be derived from:\
@@ -35,7 +36,7 @@ Results in the equation describing the fraction of new solution entering the rea
 <img src="https://render.githubusercontent.com/render/math?math=X_%7BA%7D%3D1-%5Cexp(-%5Cfrac%7BQ_%7BIN%7D%7D%7BV%7Dt)">\
 Similar, for the equation of the fraction of solution present in the reactor:\
 <img src="https://render.githubusercontent.com/render/math?math=X_%7BB%7D%3D1-X_%7BA%7D%3D%5Cexp(-%5Cfrac%7BQ_%7BIN%7D%7D%7BV%7Dt)">\
-Which allows the volume fractions of PHREEQC solutions in the tank to be calculated.\ 
+Which allows the volume fractions of PHREEQC solutions in the tank to be calculated. 
 
 
 ## Tank LIFO Subclass
@@ -52,7 +53,10 @@ Water enters this tank based on First In First Out principle, like the pipes in 
   <img src="https://github.com/michaeltan91/Victoria/blob/master/img/TankFIFO.PNG"/>
 </p>
 
-LATEX:
+
+## LATEX:
+In case the formulas do not show up and if Github supports inline formulas.
+
 X_{k}=\frac{\sum_{i=0}^{n}Q_{IN,n}X_{k,IN,n}}{\sum_{j=0}^{m}Q_{OUT,m}+Q_{DEMAND}}\]
 
 \frac{d}{dt}(N_{A})=Q_{IN}C_{A,IN}-Q_{OUT}C_{A}
