@@ -29,6 +29,8 @@ class Solver(object):
         self.models.nodes[node.uid].flowcount = 0
 
         for link in node.downstream_links:
+            if link.velocity < 0.001:
+                return
             flow_cnt = self.models.nodes[node.uid].flowcount
             flow_in = round(abs(link.flow)/3600 * timestep, dgt)
             # Push and Pull parcels into and from the downstream link
